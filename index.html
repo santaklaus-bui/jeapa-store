@@ -6,204 +6,89 @@
 <title>JEAPA Store</title>
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; }
-  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
   th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-  th { background: #f4f4f4; }
-  input, select, button { padding: 5px; margin: 2px; }
-  .min-btn { cursor: pointer; padding: 2px 5px; margin-left: 5px; }
-  .top-actions { display: flex; justify-content: flex-end; margin-bottom: 5px; }
-  .top-actions button { margin-left: 5px; }
+  th { background-color: #f2f2f2; position: relative; }
+  button { padding: 2px 5px; margin-left: 5px; cursor: pointer; }
 </style>
 </head>
 <body>
 
-<h2>JEAPA Store</h2>
+<h1>JEAPA Store</h1>
 
-<!-- Add product form -->
-<div>
-  <input type="text" id="productName" placeholder="Product Name">
-  <input list="companyList" id="company" placeholder="Company">
-  <datalist id="companyList"></datalist>
-  <input type="number" id="dealerPrice" placeholder="Dealer Price">
-  <input type="number" id="storePrice" placeholder="Store Price">
-  <button id="addBtn">Add</button>
-</div>
-
-<!-- Table actions -->
-<div class="top-actions">
-  <button id="searchBtn">Search</button>
-  <button class="min-btn" data-col="2" id="toggleDealer">D</button>
-  <button class="min-btn" data-col="3" id="toggleStore">S</button>
-</div>
-
-<!-- Products table -->
-<table id="productsTable">
+<table id="productTable">
   <thead>
-  <tr>
-    <th>ID</th>
-    <th>Product Name</th>
-    <th>Company</th>
-    <th>
-      Dealer Price
-      <button class="toggleColumn" data-column="3">-</button>
-    </th>
-    <th>
-      Store Price
-      <button class="toggleColumn" data-column="4">-</button>
-    </th>
-    <th>Action</th>
-  </tr>
-</thead>
-  <tbody></tbody>
+    <tr>
+      <th>ID</th>
+      <th>Product Name</th>
+      <th>Company</th>
+      <th>
+        Dealer Price
+        <button class="toggleColumn" data-column="3">-</button>
+      </th>
+      <th>
+        Store Price
+        <button class="toggleColumn" data-column="4">-</button>
+      </th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Product rows will be inserted here dynamically -->
+  </tbody>
 </table>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxbQ2SnUlAjTNYU9diNrtPtlhnrQ8iefIcPk1WsD_lR_raLcb2-bsG-kFIwFTJ8tN32/exec";
-let products = [];
-let companies = new Set();
-let editingId = null;
+const tableBody = document.querySelector('#productTable tbody');
 
-// Capitalize each word
-function capitalizeWords(str) {
-  return str.replace(/\b\w+\b/g, word => {
-    if (word === word.toUpperCase()) return word; // keep acronyms
-    return word[0].toUpperCase() + word.slice(1).toLowerCase();
-  });
-}
+// Sample initial products
+let products = [
+  { id: "001", name: "Oishi", company: "Gin", dealerPrice: "SMB", storePrice: 100 },
+  { id: "002", name: "Mojito", company: "Beermen", dealerPrice: "SMB", storePrice: 200 }
+];
 
-// Fetch all products
-async function loadProducts() {
-  const res = await fetch(API_URL);
-  products = await res.json();
-  renderTable();
-}
-
-// Render table
 function renderTable() {
-  const tbody = document.querySelector("#productsTable tbody");
-  tbody.innerHTML = "";
-  products.forEach(p => {
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${p.id}</td>
-      <td contenteditable="${editingId === p.id}">${p.name}</td>
-      <td contenteditable="${editingId === p.id}">${p.dealerPrice}</td>
-      <td contenteditable="${editingId === p.id}">${p.storePrice}</td>
-      <td contenteditable="${editingId === p.id}">${p.company}</td>
+  tableBody.innerHTML = '';
+  products.forEach(product => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${product.id}</td>
+      <td>${product.name}</td>
+      <td>${product.company}</td>
+      <td>${product.dealerPrice}</td>
+      <td>${product.storePrice}</td>
       <td>
-        ${editingId === p.id ? `<button class="saveBtn">Save</button>` : `<button class="editBtn">Edit</button>`}
+        <button class="editBtn">Edit</button>
         <button class="deleteBtn">Delete</button>
-      </td>`;
-    tbody.appendChild(tr);
-
-    // Update companies set
-    companies.add(p.company);
-
-    // Event listeners
-    tr.querySelector(".editBtn")?.addEventListener("click", () => {
-      editingId = p.id;
-      renderTable();
-    });
-    tr.querySelector(".saveBtn")?.addEventListener("click", () => saveEdit(p.id, tr));
-    tr.querySelector(".deleteBtn").addEventListener("click", () => deleteProduct(p.id));
-  });
-
-  updateCompanyDropdown();
-}
-
-// Update company dropdown
-function updateCompanyDropdown() {
-  const datalist = document.getElementById("companyList");
-  datalist.innerHTML = "";
-  companies.forEach(c => {
-    const option = document.createElement("option");
-    option.value = c;
-    datalist.appendChild(option);
+      </td>
+    `;
+    tableBody.appendChild(row);
   });
 }
 
-// Add product
-document.getElementById("addBtn").addEventListener("click", async () => {
-  const nameInput = document.getElementById("productName");
-  const companyInput = document.getElementById("company");
-  const dealerPriceInput = document.getElementById("dealerPrice");
-  const storePriceInput = document.getElementById("storePrice");
+renderTable();
 
-  const name = capitalizeWords(nameInput.value.trim());
-  const company = companyInput.value.trim();
-  const dealerPrice = dealerPriceInput.value;
-  const storePrice = storePriceInput.value;
+// Column toggle buttons inside header
+document.querySelectorAll('.toggleColumn').forEach(button => {
+  button.addEventListener('click', function() {
+    const colIndex = parseInt(this.getAttribute('data-column'));
+    const table = document.getElementById('productTable');
+    const cells = Array.from(table.rows).map(row => row.cells[colIndex]);
 
-  if (!name || !company || !dealerPrice || !storePrice) {
-    alert("All fields must be filled");
-    return;
-  }
-
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({name, company, dealerPrice, storePrice})
+    if (this.textContent === '-') {
+      // Minimize: only show first letter in header
+      cells[0].textContent = colIndex === 3 ? 'D' : 'S';
+      for (let i = 1; i < cells.length; i++) cells[i].style.display = 'none';
+      this.textContent = '+';
+    } else {
+      // Expand
+      cells[0].textContent = colIndex === 3 ? 'Dealer Price' : 'Store Price';
+      for (let i = 1; i < cells.length; i++) cells[i].style.display = '';
+      this.textContent = '-';
+    }
   });
-  nameInput.value = companyInput.value = dealerPriceInput.value = storePriceInput.value = "";
-  loadProducts();
 });
-
-// Save edit
-async function saveEdit(id, tr) {
-  const cells = tr.querySelectorAll("td");
-  const updated = {
-    id,
-    name: capitalizeWords(cells[1].innerText.trim()),
-    dealerPrice: cells[2].innerText.trim(),
-    storePrice: cells[3].innerText.trim(),
-    company: cells[4].innerText.trim()
-  };
-  await fetch(API_URL, {
-    method: "PUT",
-    body: JSON.stringify(updated)
-  });
-  editingId = null;
-  loadProducts();
-}
-
-// Delete product
-async function deleteProduct(id) {
-  if (!confirm("Are you sure?")) return;
-  await fetch(API_URL, {
-    method: "DELETE",
-    body: JSON.stringify({id})
-  });
-  loadProducts();
-}
-
-// Search
-document.getElementById("searchBtn").addEventListener("click", () => {
-  const query = prompt("Enter product or company name:").toLowerCase();
-  const filtered = products.filter(p =>
-    p.name.toLowerCase().includes(query) ||
-    p.company.toLowerCase().includes(query)
-  );
-  products = filtered;
-  renderTable();
-});
-
-// Minimize/expand columns
-function toggleColumn(colIndex, btn) {
-  const table = document.getElementById("productsTable");
-  const rows = table.rows;
-  let minimized = btn.dataset.minimized === "true";
-  for (let i = 0; i < rows.length; i++) {
-    rows[i].cells[colIndex].style.display = minimized ? "" : "none";
-  }
-  btn.dataset.minimized = !minimized;
-  btn.textContent = minimized ? (colIndex === 2 ? "D" : "S") : "+";
-}
-document.getElementById("toggleDealer").addEventListener("click", e => toggleColumn(2, e.target));
-document.getElementById("toggleStore").addEventListener("click", e => toggleColumn(3, e.target));
-
-// Initial load
-loadProducts();
 </script>
 
 </body>
 </html>
-
