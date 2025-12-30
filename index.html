@@ -39,15 +39,21 @@
 <!-- Products table -->
 <table id="productsTable">
   <thead>
-    <tr>
-      <th>ID</th>
-      <th>Product Name</th>
-      <th>Dealer Price</th>
-      <th>Store Price</th>
-      <th>Company</th>
-      <th>Action</th>
-    </tr>
-  </thead>
+  <tr>
+    <th>ID</th>
+    <th>Product Name</th>
+    <th>Company</th>
+    <th>
+      Dealer Price
+      <button class="toggleColumn" data-column="3">-</button>
+    </th>
+    <th>
+      Store Price
+      <button class="toggleColumn" data-column="4">-</button>
+    </th>
+    <th>Action</th>
+  </tr>
+</thead>
   <tbody></tbody>
 </table>
 
@@ -200,3 +206,4 @@ loadProducts();
 
 </body>
 </html>
+
