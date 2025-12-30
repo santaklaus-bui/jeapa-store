@@ -76,12 +76,12 @@ document.querySelectorAll('.toggleColumn').forEach(button => {
     const cells = Array.from(table.rows).map(row => row.cells[colIndex]);
 
     if (this.textContent === '-') {
-      // Minimize: only show first letter in header
+      // Minimize: show only D or S in header
       cells[0].textContent = colIndex === 3 ? 'D' : 'S';
       for (let i = 1; i < cells.length; i++) cells[i].style.display = 'none';
       this.textContent = '+';
     } else {
-      // Expand
+      // Expand: restore header and all cells
       cells[0].textContent = colIndex === 3 ? 'Dealer Price' : 'Store Price';
       for (let i = 1; i < cells.length; i++) cells[i].style.display = '';
       this.textContent = '-';
